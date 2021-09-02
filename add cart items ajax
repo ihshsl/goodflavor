@@ -1,0 +1,55 @@
+<?php
+require_once "../includes/inc.session.php";
+include '../includes/inc.config.php';
+include '../includes/class/cls.Cart.php';
+include '../includes/class/cls.Menu.php';
+
+if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+    // Reset token
+    unset($_SESSION["csrf_token"]);
+    die("CSRF token validation failed");
+} else {
+    $menu = new Menu();
+    $cart = new Cart();
+    $is_reward = isset($_REQUEST['is_reward']) ? $_REQUEST['is_reward'] : null;
+
+    $menu_id = isset($_REQUEST['menu_id']) ? $_REQUEST['menu_id'] : null;
+    $menu_data = $menu->getMenuById($menu_id);
+    $qty = isset($_REQUEST['qty']) ? $_REQUEST['qty'] : null;
+    $option_selected = isset($_REQUEST['option_selected']) ? $_REQUEST['option_selected'] : null;
+    $collapse_count = isset($_REQUEST['collapse_count']) ? $_REQUEST['collapse_count'] : null;
+
+    if ($is_reward) {
+        $_SESSION['rewardMenuId'] = $menu_id;
+        $_SESSION['option_id'] =  implode(",", $_REQUEST['option-id_1']);
+        $_SESSION['option_qty'] =  implode(",", $_REQUEST['option-qty_1']);
+        $_SESSION['option_price'] =  implode(",", $_REQUEST['option-price_1']);
+    } else {
+
+        $random = time();
+        foreach ($collapse_count as $row) {
+            $menu_tab_id = $menu_data['id'] . "_" . $row . "_" . $random;
+
+            $implode_option_id = implode(",", $_REQUEST['option-id_' . $row]);
+            $implode_option_qty = implode(",", $_REQUEST['option-qty_' . $row]);
+            $implode_option_price = implode(",", $_REQUEST['option-price_' . $row]);
+            $itemData = array(
+                'id' => $menu_tab_id,
+                'menu_id' => $menu_id,
+                'name' => $menu_data['menu_name'],
+                'price' => $menu_data['menu_price'],
+                'qty' => 1,
+                "option_id" => $implode_option_id,
+                "option_qty" => $implode_option_qty,
+                "option_price" => $implode_option_price
+            );
+
+            // Insert item to cart
+            $cart->insert($itemData);
+        }
+    }
+
+
+    unset($_SESSION['cart_contents']['cart_total']);
+    unset($_SESSION['cart_contents']['total_items']);
+}

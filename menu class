@@ -1,0 +1,50 @@
+<?php
+class Menu
+{
+    
+    // public attributes
+    public $id;
+    public $item_id;
+    public $menu_name;
+    public $menu_description;
+    public $menu_price;
+    public $menu_image;
+    public $menu_type;
+    public $menu_type_id;
+    public $options;
+    public $created_at;
+    public $created_by;
+    public $updated_at;
+    public $updated_by;
+    public $is_deleted;
+    public $is_active;
+    
+    
+    // functions
+    function __construct($data = NULL)
+    {
+       
+    }
+    
+    public function getMenuByType($menu_type) {
+
+        $stmt = Database::prepare("SELECT * FROM menu WHERE menu_type = :menu_type");
+        $stmt -> bindParam(':menu_type', $menu_type, PDO::PARAM_STR);
+        $stmt -> execute();
+
+        $outputArray = $stmt -> fetchAll(PDO::FETCH_ASSOC);
+        $stmt -> closeCursor();
+        return $outputArray;
+    }
+
+    public function getMenuById($menu_id) {
+
+        $stmt = Database::prepare("SELECT * FROM menu WHERE id = :id");
+        $stmt -> bindParam(':id', $menu_id, PDO::PARAM_INT);
+        $stmt -> execute();
+
+        $outputArray = $stmt -> fetch(PDO::FETCH_ASSOC);
+        $stmt -> closeCursor();
+        return $outputArray;
+    }
+}
